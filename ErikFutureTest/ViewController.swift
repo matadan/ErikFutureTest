@@ -6,7 +6,8 @@
 import UIKit
 import Erik
 
-import PromiseKit
+import BrightFutures
+import Result
 
 class ViewController: UIViewController {
     
@@ -31,27 +32,6 @@ class ViewController: UIViewController {
     }
 }
 
-extension Erik {
-    public func visitPromise(url: URL) -> Promise<Document> {
-        
-        return Promise { fulfill, reject in
-            let _ = Erik.visit(url: url) { doc, err in
-                if err == nil {
-                    fulfill(doc!)
-                } else {
-                    reject(err!)
-                }
-            }
-        }
-    }
-    
-    public static func visitPromise(url: URL) -> Promise<Document> {
-        return Erik.sharedInstance.visitPromise(url: url)
-    }
-
-}
-
-
 let urlStrings = [
     "https://www.google.com",
     "https://www.trello.com/forgot/",
@@ -67,50 +47,64 @@ func manipulateDom(document: Document) {
     print("Number of elements: \(document.elements.count)")
 }
 
-func erikPromise(url: URL) -> Promise<String> {
+func erikFuture(url: URL) -> Future<String, NSError> {
     
-    let promise: Promise<String> = Erik.visitPromise(url: url)
-        .then { doc in
-            print("-: \(doc.title!)")
+    let promise = Promise<String, NSError>()
+    
+    Erik.visit(url: url) { doc, err in
+        if err == nil {
+            print("-: \(doc!.title!)")
             
-            manipulateDom(document: doc)
+            manipulateDom(document: doc!)
             
-            return Promise<String>(value: "\(doc.title!) DOM manipulated")
+            promise.success("\(doc!.title!) DOM manipulated")
+        } else {
+            promise.failure(err as! NSError)
         }
-        .catch { err in
-            print("-: \(err)")
     }
     
-    return promise
+    return promise.future
+}
+
+func boolFuture() -> Future<Bool, NoError> {
+    let promise = Promise<Bool, NoError>()
+    
+    promise.success(true)
+    
+    return promise.future
 }
 
 func erikFirst() {
-    let _ = firstly {
-        erikPromise(url: urls[0])
+    
+    erikFuture(url: urls[0])
+    .andThen {_ in 
+        print(" Do somehting else")
     }
-    .then { _ in
-        return Promise<Bool>(value: true)
-    }.then { flag in
+    .andThen { flag in
         print("1: \(flag)")
-    }
-    .catch { err in
-        print("1. \(err)")
+    }.onFailure { err in
+        print("1: \(err)")
     }
 }
 
 func erikSecond() {
-    let _ = firstly {
-        return Promise<Bool>(value: true)
+
+    boolFuture()
+    .andThen { result in
+        let _ = erikFuture(url: urls[0])
+        .andThen { result in
+            switch result {
+            case .success(let message):
+                print("2: \(message)")
+
+            case .failure(let err):
+                print("2: \(err)")
+            }
+        }
     }
-    .then { _ in
-        erikPromise(url: urls[0])
-    }.then { message in
-        print("2: \(message)")
+    .onFailure { err in
+        print("2: onFailure: \(err)")
     }
-    .catch { err in
-        print("2. \(err)")
-    }
-    
 }
 
 func demoErikPromiseKit() {
@@ -124,6 +118,9 @@ func demoErikPromiseKit() {
 
 func demoErikPromiseKit2() {
 
+    //fix:
+    Erik.visit(url: URL(string: "https://www.google.com")!, completionHandler: nil)
+    
     print("----Erik second")
     erikSecond()
     erikFirst()
