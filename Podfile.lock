@@ -1,0 +1,38 @@
+PODS:
+  - BrightFutures (5.1.0):
+    - Result (~> 3.0)
+  - Erik (2.0.1):
+    - Erik/Core (= 2.0.1)
+    - Kanna
+  - Erik/Core (2.0.1):
+    - Kanna
+  - Erik/Future (2.0.1):
+    - BrightFutures
+    - Erik/Core
+    - Kanna
+  - Kanna (2.1.1)
+  - Result (3.1.0)
+
+DEPENDENCIES:
+  - Erik (from `https://github.com/phimage/Erik.git`, tag `2.0.1`)
+  - Erik/Future (from `https://github.com/phimage/Erik.git`, tag `2.0.1`)
+
+EXTERNAL SOURCES:
+  Erik:
+    :git: https://github.com/phimage/Erik.git
+    :tag: 2.0.1
+
+CHECKOUT OPTIONS:
+  Erik:
+    :git: https://github.com/phimage/Erik.git
+    :tag: 2.0.1
+
+SPEC CHECKSUMS:
+  BrightFutures: 62aafb1a63520eda91c9286bf4be33e58e043938
+  Erik: af90f946d6671dadfc25129ce472b2155836931f
+  Kanna: 9b4b086c218703f2b94f5b21a466217dd2f9332e
+  Result: 4e3ed5995ed94d0cd6a09be9a431fce3f3624bbf
+
+PODFILE CHECKSUM: 834ab29089be1e72f47bcd2e3ad112815e01361e
+
+COCOAPODS: 1.2.0
